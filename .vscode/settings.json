@@ -1,0 +1,13 @@
+{
+    "files.associations": {
+        "*.rmd": "markdown",
+        "stdio.h": "c",
+        "fcntl.h": "c",
+        "errno.h": "c",
+        "types.h": "c",
+        "wait.h": "c",
+        "unistd.h": "c",
+        "stat.h": "c",
+        "file.h": "c"
+    }
+}

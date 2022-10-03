@@ -1,0 +1,11 @@
+Source code
+represents the part of
+process that
+contains the programming
+language itself. You may
+use a text editor to
+write your source code file.
+
+chars -> 141 
+words -> 25 
+lines -> 7
