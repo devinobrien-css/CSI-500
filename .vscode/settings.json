@@ -8,6 +8,9 @@
         "wait.h": "c",
         "unistd.h": "c",
         "stat.h": "c",
-        "file.h": "c"
+        "file.h": "c",
+        "string.h": "c",
+        "encdec.h": "c",
+        "stdlib.h": "c"
     }
 }

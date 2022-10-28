@@ -128,7 +128,8 @@ int forkToPipe(){
 
         while (1) {
             char temp;
-            if (read(p[0], &temp, 1) < 1) return 0;
+            int value = read(p[0], &temp, 1);
+            if(temp == '\0' || value < 1) break;
             printf("%c", temp);
         }
 
