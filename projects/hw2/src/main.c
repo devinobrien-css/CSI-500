@@ -29,9 +29,12 @@ int main(int argc, char* args[]){
         printf("error forking processes. aborting process.\n");
         abort();
     }
+    /*
+        Consumer Process: Read encoded frames from pipe, decode, check parity
+    */
     else if(pid == 0){
         /*
-            Read encoded frames from pipe, decode, check parity
+            Read in encoded data from pipe and decode
         */
         close(p2c_pipe[WRITE]);
         int nbytes, payload_size, frame_status = 0, output_index = 0;
@@ -89,7 +92,13 @@ int main(int argc, char* args[]){
 
         exit(0);
     }
+    /*
+        Producer process: Write encoded frames, wait for child, read encoded frames
+    */
     else {
+        /*
+            Encode and write frames to pipe
+        */
         close(p2c_pipe[READ]);
         char payload[5];
         int payload_index = 0;
@@ -115,6 +124,9 @@ int main(int argc, char* args[]){
             abort();
         }  
 
+        /*
+            Read in encoded data from pipe and decode
+        */
         close(c2p_pipe[WRITE]);
         int nbytes, payload_size, frame_status = 0, output_index = 0;
         char byte[8];
@@ -141,7 +153,7 @@ int main(int argc, char* args[]){
         close(c2p_pipe[READ]);
 
         write_file("./bin/filename.done",output);
-        printf("end of parent: %s", output);
+        printf("%s", output);
     }
     return 0;
 }
