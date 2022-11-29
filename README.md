@@ -4,7 +4,7 @@
 holds assignments and projects relative to ICSI 500, Operating Systems.
 
 ### Table of Contents
-- [ ] hw1 **forks and pipes**
+- [a] hw1 **forks and pipes**
 - [ ] hw2 **encoding and decoding**
 - [ ] hw3 **socket and port networking**
 
