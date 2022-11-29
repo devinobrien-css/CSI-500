@@ -9,5 +9,11 @@ Create a server to accept multiple requests from a client
     * serverEncoder
         - [ ] read in from socket,
         - [ ] decode messages
-        - [ ] create threads: 
-            * 
+        - [ ] create 7 threads: 
+            * charA
+            * charB
+            * charC
+            * charD
+            * charE
+            * charF
+            * charG
