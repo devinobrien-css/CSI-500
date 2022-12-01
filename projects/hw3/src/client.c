@@ -5,43 +5,51 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#define PORT 8080
+#include <stdlib.h>
+#define PORT 8888
+#define LOCALHOST "127.0.0.1"
 
-int main(int argc, char const* argv[])
-{
-	int sock = 0, valread, client_fd;
-	struct sockaddr_in serv_addr;
-	char* hello = "Hello from client";
-	char buffer[1024] = { 0 };
-	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-		printf("\n Socket creation error \n");
+int main(int argc, char const* argv[]){
+
+	char response_buffer[1024] = { 0 }; //buffer for recieving response from server
+	char* request_buffer = "Convert this statement serverside."; //buffer for holding request to server
+
+
+
+    //build client socket with TCP connection
+	struct sockaddr_in server_address;
+	int client_socket = 0, response_status, client_fd;
+	if ((client_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+		printf("ERROR: client socket could not be created");
+        exit(0);
+	}
+    printf("client socket established...\n");
+
+	//encode IPv4/IPv6 addresses 
+	server_address.sin_family = AF_INET;
+	server_address.sin_port = htons(PORT);
+	if (inet_pton(AF_INET, LOCALHOST, &server_address.sin_addr) < 1) {
+		printf("ERROR: could not encode client IP");
+        exit(0);
+	}
+    printf("client ip encoded...\n");
+
+    //attempt to establish connection to server
+	if ((client_fd = connect(client_socket, (struct sockaddr*)&server_address, sizeof(server_address))) < 0) {
+		printf("ERROR: could not connect to server");
 		return -1;
 	}
+    printf("client connection to server established...\n");
 
-	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_port = htons(PORT);
+    //message server
+	send(client_socket, request_buffer, strlen(request_buffer), 0);
+	printf("request sent to server...\n");
 
-	// Convert IPv4 and IPv6 addresses from text to binary
-	if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr)
-		<= 0) {
-		printf(
-			"\nInvalid address/ Address not supported \n");
-		return -1;
-	}
-
-	if ((client_fd
-		= connect(sock, (struct sockaddr*)&serv_addr,
-				sizeof(serv_addr)))
-		< 0) {
-		printf("\nConnection Failed \n");
-		return -1;
-	}
-	send(sock, hello, strlen(hello), 0);
-	printf("Hello message sent\n");
-	valread = read(sock, buffer, 1024);
-	printf("%s\n", buffer);
-
-	// closing the connected socket
+    //retrieve response
+	response_status = read(client_socket, response_buffer, 1024);
 	close(client_fd);
+    printf("response received from server...\n");
+	printf("%s\n", response_buffer);
+
 	return 0;
 }
