@@ -2,6 +2,9 @@
 #include<string.h>
 #include<stdlib.h>
 #include"../encDec.h"
+#include <inttypes.h> // uint32_t, uint8_t
+#include <stddef.h>
+#include <stdint.h>
 
 /**Frames the given payload
  */
@@ -24,3 +27,4 @@ void deframe(char*frame,char**payload){
         printf("%c",frame[i]);
     }
 }
+

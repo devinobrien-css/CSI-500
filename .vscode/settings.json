@@ -11,6 +11,9 @@
         "file.h": "c",
         "string.h": "c",
         "encdec.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "pthread.h": "c",
+        "inet.h": "c",
+        "socket.h": "c"
     }
 }

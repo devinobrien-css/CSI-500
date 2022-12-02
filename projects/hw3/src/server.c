@@ -1,19 +1,21 @@
+/* Server Application
+---------------------------
+forks to serverEncoder and serverDecoder. sends responses to clients
+*/
 #include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h> 
+#include <unistd.h>
 #include <string.h> 
+#include <fcntl.h> 
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/time.h> 
+#include <sys/wait.h>
 #include <netinet/in.h>
-	
-#define TRUE 1
-#define FALSE 0
-#define PORT 8888
-#define MAX_CONNECTIONS 10
-#define REQUEST_SIZE 1025 //server has 1kB request size
+#include <sys/stat.h>
+#include "encDec.h"
 	
 int main(int argc , char *argv[]){
 	int server_socket, //a reference to this server's socket
@@ -28,6 +30,9 @@ int main(int argc , char *argv[]){
 	fd_set client_fd_set; //client socket file descriptors
 	char request_buffer[REQUEST_SIZE]; //this server's request buffer
 	char response_buffer[REQUEST_SIZE]; //this server's response buffer
+
+	pid_t pid;
+	int fork_status;
 		
 	//set all potential client sockets to 0
 	for (int i = 0; i < MAX_CONNECTIONS; i++){
@@ -115,8 +120,8 @@ int main(int argc , char *argv[]){
 			client_sd = client_socket_set[i];
 				
 			if (FD_ISSET(client_sd, &client_fd_set)){
-				printf("clent interaction detected...\n");
-				if ((request_status = read( client_sd , request_buffer, 1024)) == 0){ //request buffer
+				printf("client interaction detected...\n");
+				if ((request_status = read(client_sd, request_buffer, 1024)) == 0){ //request buffer
 					//client disconnect
 					getpeername(client_sd, (struct sockaddr*)&server_address, (socklen_t*)&socket_address_length);
 					printf("client disconnected:\n IP: %s\nPort: %d\n", inet_ntoa(server_address.sin_addr), ntohs(server_address.sin_port));
@@ -125,15 +130,49 @@ int main(int argc , char *argv[]){
 					client_socket_set[i] = 0;
 				}
 				else{
-					//send response to client
-					request_buffer[request_status] = '\0'; //request buffer
-
+					request_buffer[request_status] = '\0'; 
 					printf("server recieved request: %s\n",request_buffer);
+					int fd = open("./bin/request.inpf",O_CREAT | O_WRONLY | O_TRUNC);
+					if (fd ==-1)
+						printf("ERROR: request file could not be created");
+					write(fd,request_buffer,strlen(request_buffer));
+					close(fd);
 
-					if(send(client_sd, request_buffer, strlen(request_buffer), 0) != strlen(request_buffer) ){ //request buffer
-						printf("ERROR: response could not be sent to client");
+					if((pid = fork()) < -1)
+						printf("ERROR: server failed to fork");
+					else if(pid == 0){//serverDecoder
+						char *args[]={"./serverDecoder", NULL};
+						execvp(args[0],args);
+						printf("ERROR: execvp failed to run");
+						exit(0);
 					}
-					printf("server response sent to client...\n");
+					else{//serverEncoder
+						if(waitpid(pid, &fork_status, 0) > 0) {
+							if(WIFEXITED(fork_status) && !WEXITSTATUS(fork_status)){
+
+								int fd = open("./bin/temp.inpf", O_RDONLY);
+								if(fd == -1)
+									printf("ERROR: temp file could not be opened");
+								char*file_buffer = malloc(1024);
+								read(fd,file_buffer,1024);
+								close(fd);
+								if(send(client_sd, file_buffer, strlen(file_buffer), 0) != strlen(file_buffer) ){ //request buffer
+									printf("ERROR: response could not be sent to client");
+								}
+								printf("server response sent to client...\n");
+							}
+							else if(WIFEXITED(fork_status) && WEXITSTATUS(fork_status)) {
+								if (WEXITSTATUS(fork_status) == 127)
+									printf("ERROR: server exec failed\n");
+								else
+									printf("WARNING: exec returned a non-zero status\n");            
+							}
+							else
+								printf("ERROR: server execvp did not terminate successfully");
+						}
+						else 
+							printf("ERROR: server parent did not successfully wait for child");
+					}
 				}
 			}
 		}
