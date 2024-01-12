@@ -6,7 +6,7 @@ holds assignments and projects relative to ICSI 500, Operating Systems.
 ### Table of Contents
 - [x] hw1 **forks and pipes**
 - [x] hw2 **encoding and decoding**
-- [ ] hw3 **socket and port networking**
+- [x] hw3 **socket and port networking**
 
 ### Execution Instructions
 - change directories to the desired example (i.e.) `cd projects/hw*/src`
